@@ -1,0 +1,44 @@
+/* Estilos para pantallas pequeñas (max-width: 600px) */
+@media screen and (max-width: 600px) {
+    .searchList {
+      flex-direction: column; /* Cambia la dirección de los elementos a columna */
+    }
+  
+    .searchListItem {
+      margin-bottom: 16px; /* Agrega espacio entre los elementos de búsqueda */
+    }
+  
+    .searchInput {
+      width: 100%; /* Ocupa todo el ancho disponible */
+    }
+  }
+
+  .searchList{
+
+    background-color: white;
+    border: 3px solid rgb(34, 96, 241);
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    padding: 10px 0px;
+    border-radius: 5px;
+    margin-top: 20px;
+    width: 600px;
+  margin-left: 25px;
+  bottom: -25px;
+  }
+
+  .icon-gray {
+    color: gray;
+  }
+
+  .searchListItem{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .searchInput{
+    border:none;
+    outline: none;
+  }

@@ -3,3 +3,20 @@
     color: white; /* Cambia el color del texto a blanco */
   }
   
+  /* Definir estilos para pantallas pequeñas (max-width: 600px) */
+@media screen and (max-width: 600px) {
+  .toolbar {
+    flex-direction: column; /* Cambia la dirección de los elementos a columna */
+  }
+
+  .btnNav {
+    text-align: left; /* Alinea el texto a la izquierda */
+    margin: 8px 0; /* Agrega espacio entre los botones */
+  }
+
+  .login-signup-buttons {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end; /* Alinea los botones de inicio de sesión y registro a la derecha */
+  }
+}
