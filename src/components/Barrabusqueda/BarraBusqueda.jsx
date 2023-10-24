@@ -1,33 +1,44 @@
-import React from "react";
+import React, { useState } from "react";
 import "./barrabusqueda.css";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCalendarDay, faPerson, faMap } from "@fortawesome/free-solid-svg-icons";
+import { Box, TextField, MenuItem } from "@mui/material";
 
-function searchBar() {
+function SearchBar() {
+  const [provincia, setProvincia] = useState("");
+
+  const handleChange = (event) => {
+    setProvincia(event.target.value);
+  };
+
+  const provincias = [
+    { title: "provincia1", value: "prov1" },
+    { title: "provincia2", value: "prov2" },
+    { title: "provincia3", value: "prov3" },
+    { title: "provincia4", value: "prov4" },
+    { title: "provincia5", value: "prov5" },
+  ];
+
   return (
-    <>
-    <div className="searchList">
-      <div className="searchListItem">
-        <FontAwesomeIcon icon={faMap} style={{ marginRight: "8px" }} />
-        <input type="text" placeholder="Busca tu excursión" className="searchInput" />
-      </div>
-      <div className="searchListItem">
-        <FontAwesomeIcon icon={faCalendarDay} style={{ marginRight: "8px" }} />
-        <span className="searchText">Elije tus días</span>
-      </div>
-      <div className="searchListItem">
-        <FontAwesomeIcon icon={faPerson} style={{ marginRight: "8px" }} />
-        <span className="searchText">2 Adultos</span>
-      </div>
-      <div className="searchListItem">
-        <button className="btnSearch">Buscar</button>
-      </div>
-
-
-    </div>
-    </>
-    
+    <Box
+      style={{ marginTop: "30px" }}
+      display="flex"
+      flexDirection="column"
+      alignItems="center"
+    >
+      <TextField
+        label="Busca tu Provincia Favorita"
+        select
+        value={provincia}
+        onChange={handleChange}
+        style={{ width: "25%" }}
+      >
+        {provincias.map((item) => (
+          <MenuItem key={item.value} value={item.value}>
+            {item.title}
+          </MenuItem>
+        ))}
+      </TextField>
+    </Box>
   );
 }
 
-export default searchBar;
+export default SearchBar;
