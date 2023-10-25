@@ -4,7 +4,7 @@ import Card from "@mui/material/Card";
 import Grid from "@mui/material/Grid";
 import CardContent from "@mui/material/CardContent";
 import Typography from "@mui/material/Typography";
-import Data from "../data/DataLugares.json";
+import Data from "../data/DataPersona.json";
 import CardMedia from "@mui/material/CardMedia";
 import { CardActionArea } from "@mui/material";
 
@@ -25,15 +25,22 @@ function getRandomItems(array, count) {
   return shuffled.slice(min);
 }
 
-function Tarjeta() {
-  const randomItems = getRandomItems(Data, 3);
+function TarjetaPeople({ bandera }) {
+let randomItems =[]
+    if(bandera){
+        randomItems = getRandomItems(Data, 3);
+    }
+    else{
+        randomItems = getRandomItems(Data, Data.length);
+    }
+
 
   return (
     <Container maxWidth="lg">
       <Card>
         <CardContent>
           <Typography variant="h4" align="center">
-            LOS MAS VISITADOS
+            OPINIONES
           </Typography>
           <Grid container spacing={5} style={{ marginTop: "25px" }}>
             {randomItems.map((point, index) => (
@@ -44,19 +51,17 @@ function Tarjeta() {
                       component="img"
                       height="140"
                       image={point.img}
-                      alt={point.excursion}
+                      alt={point.nombre}
                       style={{ borderRadius: "5px" }}
                     />
                     <CardContent>
                       <Typography gutterBottom variant="h5" component="div">
-                        {point.excursion}
+                        {point.nombre}
                       </Typography>
                       <Typography variant="body2" color="text.secondary" align="justify">
                         {point.descripcion}
                       </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        Precio: {point.precio}
-                      </Typography>
+                      
                     </CardContent>
                   </CardActionArea>
                 </Card>
@@ -69,4 +74,4 @@ function Tarjeta() {
   );
 }
 
-export default Tarjeta;
+export default TarjetaPeople;
