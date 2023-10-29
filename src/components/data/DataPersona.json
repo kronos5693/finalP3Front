@@ -38,7 +38,7 @@
   {
     "nombre": "Black Panther",
     "descripcion": "Volvere",
-    "img": "https://media.newyorker.com/photos/5a875e3f33aebd0cab9bab12/1:1/w_1079,h_1079,c_limit/Brody-Passionate-Politics-Black-Panther.jpg"
+    "img": "https://www.intofilm.org/intofilm-production/scaledcropped/970x546https%3A/s3-eu-west-1.amazonaws.com/images.cdn.filmclub.org/blackpantherimage1marvelstudiosdisney.jpg/blackpantherimage1marvelstudiosdisney.jpg"
   },
   {
     "nombre": "Black Widow",
@@ -54,6 +54,26 @@
     "nombre": "Michael",
     "descripcion": "Un lujo todo",
     "img": "https://i2-prod.birminghammail.co.uk/incoming/article19548989.ece/ALTERNATES/s1200c/0_JS135297114.jpg"
+  },
+  {
+    "nombre": "Nick Fury",
+    "descripcion": "Me sacaron un ojo de la cara de lo caro que estuvo",
+    "img": "https://www.thenews.com.pk/assets/uploads/updates/2023-06-22/1083440_659821_nick-fury_updates.jpg"
+  },
+  {
+    "nombre": "Chelu",
+    "descripcion": "todo de 10",
+    "img": "https://as2.ftcdn.net/v2/jpg/04/56/54/53/1000_F_456545301_S41HJecvHT8XQkRyv92C1F9kMOe4Ak6N.jpg"
+  },
+  {
+    "nombre": "Alex",
+    "descripcion": "todo de 10",
+    "img": "https://as1.ftcdn.net/v2/jpg/04/27/09/70/1000_F_427097065_xREaoOz6CiKuDgjtFZsQbpE4tWY5iijW.jpg"
+  },
+  {
+    "nombre": "Doc",
+    "descripcion": "todo de 10",
+    "img": "https://c4.wallpaperflare.com/wallpaper/625/970/393/hugh-laurie-blue-eyed-man-beard-wallpaper-preview.jpg"
   }
 
 

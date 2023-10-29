@@ -31,7 +31,7 @@ let randomItems =[]
         randomItems = getRandomItems(Data, 3);
     }
     else{
-        randomItems = getRandomItems(Data, Data.length);
+        randomItems = getRandomItems(Data, 6);
     }
 
 

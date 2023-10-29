@@ -25,8 +25,14 @@ function getRandomItems(array, count) {
   return shuffled.slice(min);
 }
 
-function Tarjeta() {
-  const randomItems = getRandomItems(Data, 3);
+function Tarjeta({ bandera }) {
+  let randomItems =[]
+    if(bandera){
+        randomItems = getRandomItems(Data, 3);
+    }
+    else{
+        randomItems = getRandomItems(Data, 6);
+    }
 
   return (
     <Container maxWidth="lg">
