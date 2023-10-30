@@ -2,36 +2,23 @@ import React, { useState } from "react";
 import "./barrabusqueda.css";
 import { Box, TextField, MenuItem } from "@mui/material";
 import Data from "../data/DataLugares.json";
+import { Link } from "react-router-dom";
+
 function SearchBar() {
   const [provincia, setProvincia] = useState("");
 
   const handleChange = (event) => {
     setProvincia(event.target.value);
   };
-  /*
-  const provincias = [
-    { title: "provincia1", value: "prov1" },
-    { title: "provincia2", value: "prov2" },
-    { title: "provincia3", value: "prov3" },
-    { title: "provincia4", value: "prov4" },
-    { title: "provincia5", value: "prov5" },
-  ];*/
-/*
-  const provin = () => {
-    const provinciasUnicas = [];
-    Data.forEach((element) => {
-      if (!provinciasUnicas.includes(element.provincia)) {
-        provinciasUnicas.push(element.provincia);
-      }
-    });
-    return provinciasUnicas;
-  };
-  */
 
   const provinciasUnicas = Data.map((element) => element.provincia)
-  .filter((value, index, self) => self.indexOf(value) === index);
+    .filter((value, index, self) => self.indexOf(value) === index);
 
-
+  // Define una clase CSS para restaurar los estilos predeterminados de Material-UI
+  const linkStyles = {
+    textDecoration: "none", // Quita la subrayado
+    color: "inherit", // Utiliza el color por defecto
+  };
 
   return (
     <Box
@@ -49,7 +36,10 @@ function SearchBar() {
       >
         {provinciasUnicas.map((item) => (
           <MenuItem key={item} value={item}>
-            {item}
+            
+            <Link to={`/excursionbusqueda`} style={linkStyles}>
+              {item}
+            </Link>
           </MenuItem>
         ))}
       </TextField>

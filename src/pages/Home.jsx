@@ -2,12 +2,14 @@ import React from 'react'
 import SearchBar from '../components/Barrabusqueda/BarraBusqueda'
 import Tarjeta from '../components/Card/card'
 import TarjetaPeople from '../components/Card/cardPeople'
+import NavBar from '../components/NavBar/navBar';
 
 
 function Home() {
   const bandera=true;
   return (
     <>
+      <NavBar  />
 <div className="searchBar" style={{ marginBottom: '30px' }}>
 <SearchBar/>
 </div>

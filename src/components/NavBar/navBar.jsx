@@ -12,7 +12,39 @@ import { faIdBadge } from "@fortawesome/free-solid-svg-icons";
 import { Link, NavLink } from 'react-router-dom';
 import './navBar.css';
 
-export default function NavBar({ navArrayLinks }) {
+
+const navArrayLinks = [
+  {
+    title: "Inicio",
+    path: "/",
+    icon: faHome,
+   
+  },
+  {
+    title: "Excursiones",
+    path: "/excursiones",
+    icon: faMap,
+    
+  },
+  {
+    title: "Experiencias",
+    path: "/experiencias",
+    icon: faBomb,
+   
+  },
+  {
+    title: "Contacto",
+    path: "/contacto",
+    icon: faIdBadge,
+ 
+  },
+ 
+
+];
+
+
+
+export default function NavBar() {
   return (
     <Box sx={{ flexGrow: 1 }}>
       <AppBar position="static">
@@ -21,7 +53,7 @@ export default function NavBar({ navArrayLinks }) {
             <Button
               key={index}
               color="inherit"
-              component={NavLink}
+              component={Link}
               to={item.path}
               className="btnNav"
             >
