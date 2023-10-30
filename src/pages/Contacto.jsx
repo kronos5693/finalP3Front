@@ -1,8 +1,12 @@
 import React from 'react'
+import BioCard from '../components/Card/CardContacto'
 
 function Contacto() {
   return (
-    <div>Contacto</div>
+  <>
+  <BioCard />
+  
+  </>
   )
 }
 

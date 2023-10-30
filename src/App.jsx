@@ -40,6 +40,8 @@ function App() {
       icon: faIdBadge,
       element: Contacto,
     },
+   
+
   ];
   return (
     <>

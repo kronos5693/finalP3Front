@@ -16,7 +16,7 @@ function SearchBar() {
     { title: "provincia4", value: "prov4" },
     { title: "provincia5", value: "prov5" },
   ];*/
-
+/*
   const provin = () => {
     const provinciasUnicas = [];
     Data.forEach((element) => {
@@ -26,7 +26,12 @@ function SearchBar() {
     });
     return provinciasUnicas;
   };
-  const provinciasUnicas = provin();
+  */
+
+  const provinciasUnicas = Data.map((element) => element.provincia)
+  .filter((value, index, self) => self.indexOf(value) === index);
+
+
 
   return (
     <Box
