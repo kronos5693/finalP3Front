@@ -36,9 +36,8 @@ function SearchBar() {
       >
         {provinciasUnicas.map((item) => (
           <MenuItem key={item} value={item}>
-            
-            <Link to={`/excursionbusqueda`} style={linkStyles}>
-              {item}
+            <Link to={`/excursionbusqueda/${item}`} style={linkStyles}>
+              {item.toUpperCase()}
             </Link>
           </MenuItem>
         ))}

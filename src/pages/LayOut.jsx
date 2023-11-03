@@ -4,27 +4,18 @@ import Home from "./Home";
 import Excursiones from "./Excursiones";
 import Contacto from "./Contacto";
 import Experiencias from "./Experiencias";
-
-import Excursionbusqueda from "./Excursionbusqueda";
+import Excursionbusqueda from "./Excursionbusqueda"; // Importa Excursionbusqueda
 
 function LayOut() {
   return (
-    <>
-
-    
-      <Routes>
-        
-        <Route path="/" element={<Home />}></Route>
-        <Route path="/excursiones" element={<Excursiones />}></Route>
-        <Route path="/contacto" element={<Contacto />}></Route>
-        <Route path="/experiencias" element={<Experiencias />}></Route>
-        <Route path="/excursionbusqueda" element={<Excursionbusqueda />} ></Route>
-    
-    
-      </Routes>
-    </>
-  
-  )
+    <Routes>
+      <Route path="/" element={<Home />} />
+      <Route path="/excursiones" element={<Excursiones />} />
+      <Route path="/contacto" element={<Contacto />} />
+      <Route path="/experiencias" element={<Experiencias />} />
+      <Route path="/excursionbusqueda/:provincia" element={<Excursionbusqueda />} /> {/* Define una ruta que toma la provincia como parámetro */}
+    </Routes>
+  );
 }
 
-export default LayOut
+export default LayOut;
