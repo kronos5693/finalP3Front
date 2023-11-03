@@ -6,7 +6,8 @@ import CardContent from "@mui/material/CardContent";
 import Typography from "@mui/material/Typography";
 import Data from "../data/DataLugares.json";
 import CardMedia from "@mui/material/CardMedia";
-import { CardActionArea } from "@mui/material";
+import { Button, CardActionArea, Box } from "@mui/material";
+import { Link } from "react-router-dom";
 
 function getRandomItems(array, count) {
   const shuffled = array.slice();
@@ -26,13 +27,12 @@ function getRandomItems(array, count) {
 }
 
 function Tarjeta({ bandera }) {
-  let randomItems =[]
-    if(bandera){
-        randomItems = getRandomItems(Data, 3);
-    }
-    else{
-        randomItems = getRandomItems(Data, 6);
-    }
+  let randomItems = [];
+  if (bandera) {
+    randomItems = getRandomItems(Data, 3);
+  } else {
+    randomItems = getRandomItems(Data, 6);
+  }
 
   return (
     <Container maxWidth="lg">
@@ -44,7 +44,7 @@ function Tarjeta({ bandera }) {
           <Grid container spacing={5} style={{ marginTop: "25px" }}>
             {randomItems.map((point, index) => (
               <Grid item xs={12} sm={4} key={index}>
-                <Card sx={{ maxWidth: 345 }} style={{ padding: "10px", marginTop: "30px" }}>
+                <Card sx={{ maxWidth: 345 }} style={{ padding: "10px", marginTop: "30px", display: "flex", flexDirection: "column" }}>
                   <CardActionArea>
                     <CardMedia
                       component="img"
@@ -65,6 +65,13 @@ function Tarjeta({ bandera }) {
                       </Typography>
                     </CardContent>
                   </CardActionArea>
+                  <div style={{ display: "flex" }}>
+                    <Link to={`/compra/${point.excursion}`} style={{ width: "100%" }}>
+                      <Button variant="contained" size="small" style={{ width: "100%" }}>
+                        COMPRAR
+                      </Button>
+                    </Link>
+                  </div>
                 </Card>
               </Grid>
             ))}

@@ -6,7 +6,8 @@ import CardContent from "@mui/material/CardContent";
 import Typography from "@mui/material/Typography";
 import Data from "../data/DataLugares.json";
 import CardMedia from "@mui/material/CardMedia";
-import { CardActionArea } from "@mui/material";
+import { Button, CardActionArea } from "@mui/material";
+import { Link } from "react-router-dom";
 
 
 
@@ -25,7 +26,7 @@ const prov= provincia //convertir a string
           <Grid container spacing={5} style={{ marginTop: "25px" }}>
             {excursiones.map((point, index) => (
               <Grid item xs={12} sm={4} key={index}>
-                <Card sx={{ maxWidth: 345 }} style={{ padding: "10px", marginTop: "30px" }}>
+                <Card sx={{ maxWidth: 345 }} style={{ padding: "10px", marginTop: "30px" ,display: "flex", flexDirection: "column"}}>
                   <CardActionArea>
                     <CardMedia
                       component="img"
@@ -46,6 +47,13 @@ const prov= provincia //convertir a string
                       </Typography>
                     </CardContent>
                   </CardActionArea>
+                  <div style={{ display: "flex" }}>
+                    <Link to="/compra" style={{ width: "100%" }}>
+                      <Button variant="contained" size="small" style={{ width: "100%" }}>
+                        COMPRAR
+                      </Button>
+                    </Link>
+                  </div>
                 </Card>
               </Grid>
             ))}
