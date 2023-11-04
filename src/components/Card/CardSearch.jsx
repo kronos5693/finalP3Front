@@ -48,7 +48,7 @@ const prov= provincia //convertir a string
                     </CardContent>
                   </CardActionArea>
                   <div style={{ display: "flex" }}>
-                    <Link to="/compra" style={{ width: "100%" }}>
+                    <Link to={`/compra/${point.excursion}`}  style={{ width: "100%" }}>
                       <Button variant="contained" size="small" style={{ width: "100%" }}>
                         COMPRAR
                       </Button>
