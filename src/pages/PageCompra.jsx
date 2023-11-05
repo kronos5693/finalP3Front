@@ -1,17 +1,26 @@
-import React from 'react';
+import React, { useState } from 'react';
 import NavBar from '../components/NavBar/navBar';
 import { useParams } from 'react-router-dom';
-import { Container, CardContent, Typography, CardMedia, Card, Grid, Paper, TextField, Button } from '@mui/material'; // Asegúrate de importar los componentes necesarios
+import { Container, CardContent, Typography, CardMedia, Card, Grid, Paper, TextField, Button } from '@mui/material';
 import Data from '../components/data/DataLugares.json';
 
 const PageCompra = () => {
   const { excu } = useParams();
-
   const filtro = (excu, data) => {
     return data.filter(excursion => excursion.excursion === excu);
   };
 
   const resultado = filtro(excu, Data);
+  const [disponibilidad, setDisponibilidad] = useState(1); // Inicializado en 1
+
+  const handleDisponibilidadChange = (event) => {
+    const newValue = parseInt(event.target.value, 10);
+    if (!isNaN(newValue) && newValue >= 1) {
+      setDisponibilidad(newValue);
+    }
+  };
+
+  const today = new Date().toISOString().split('T')[0]; // Obtén la fecha actual en formato 'YYYY-MM-DD'
 
   return (
     <>
@@ -38,27 +47,34 @@ const PageCompra = () => {
             </Grid>
             <Grid item xs={12} md={6}>
               <Paper elevation={3} style={{ padding: '20px', textAlign: 'center' }}>
-                <Typography variant="h6" gutterBottom>
-                  Selección de Fecha
-                </Typography>
-                <TextField
-                  id="fecha"
-                  label="Fecha de Excursión"
-                  type="date"
-                  InputLabelProps={{
-                    shrink: true,
-                  }}
-                  fullWidth
-                />
-                <Typography variant="h6" gutterBottom style={{ marginTop: '20px' }}>
-                  Disponibilidad
-                </Typography>
-                <TextField
-                  id="disponibilidad"
-                  label="Número de Personas"
-                  type="number"
-                  fullWidth
-                />
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                  <Typography variant="h6" gutterBottom>
+                    Selección de Fecha
+                  </Typography>
+                  <TextField
+                    id="fecha"
+                    label="Fecha de Excursión"
+                    type="date"
+                    InputLabelProps={{
+                      shrink: true,
+                    }}
+                    fullWidth
+                    inputProps={{ min: today }} // Establece el mínimo a la fecha actual
+                  />
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '20px' }}>
+                  <Typography variant="h6" gutterBottom>
+                    Disponibilidad
+                  </Typography>
+                  <TextField
+                    id="disponibilidad"
+                    label="Número de Personas"
+                    type="number"
+                    value={disponibilidad}
+                    onChange={handleDisponibilidadChange}
+                    fullWidth
+                  />
+                </div>
                 <Button variant="contained" color="primary" style={{ marginTop: '20px' }}>
                   Comprar Excursión
                 </Button>
