@@ -67,10 +67,12 @@ export default function NavBar() {
             </Button>
           ))}
 
-          <Box sx={{ flex: 1 }} /> {/* Espacio flexible para empujar los botones a la derecha */}
+          <Box sx={{ flex: 1 }} /> 
           <div className="login-signup-buttons">
-            <Button color="inherit">Login</Button>
-            <Button color="inherit">SignUp</Button>
+          <Button color="inherit" component={Link} to="/login">
+            Login
+          </Button>
+            <Button color="inherit" component={Link} to="/registro">SignUp</Button>
           </div>
         </Toolbar>
       </AppBar>
