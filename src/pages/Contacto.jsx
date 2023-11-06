@@ -8,7 +8,7 @@ function Contacto() {
   <>
      <NavBar  />
      <ContactForm></ContactForm>
-  <BioCard />
+
   
   </>
   )
