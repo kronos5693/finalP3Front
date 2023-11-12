@@ -4,10 +4,11 @@ import Card from "@mui/material/Card";
 import Grid from "@mui/material/Grid";
 import CardContent from "@mui/material/CardContent";
 import Typography from "@mui/material/Typography";
-import Data from "../data/DataLugares.json";
+//import Data from "../data/DataLugares.json";
 import CardMedia from "@mui/material/CardMedia";
 import { Button, CardActionArea, Box } from "@mui/material";
 import { Link } from "react-router-dom";
+import axios from 'axios';  
 
 function getRandomItems(array, count) {
   const shuffled = array.slice();
@@ -27,11 +28,20 @@ function getRandomItems(array, count) {
 }
 
 function Tarjeta({ bandera }) {
+  const apiUrl = "http://localhost:3000/excursiones";
+  const [post, setPost] = React.useState([]);
+  React.useEffect(() => {
+    axios.get(apiUrl).then((response) => {
+      console.log(response.data);
+      setPost(response.data);
+    });
+  }, []);
+
   let randomItems = [];
   if (bandera) {
-    randomItems = getRandomItems(Data, 3);
+    randomItems = getRandomItems(post, 3);
   } else {
-    randomItems = getRandomItems(Data, 6);
+    randomItems = getRandomItems(post, 6);
   }
 
   return (
@@ -44,6 +54,8 @@ function Tarjeta({ bandera }) {
           <Grid container spacing={5} style={{ marginTop: "25px" }}>
             {randomItems.map((point, index) => (
               <Grid item xs={12} sm={4} key={index}>
+               {point && point.img && point.excursion && point.descripcion && point.precio && (
+
                 <Card sx={{ maxWidth: 345 }} style={{ padding: "10px", marginTop: "30px", display: "flex", flexDirection: "column" }}>
                   <CardActionArea>
                     <CardMedia
@@ -73,6 +85,7 @@ function Tarjeta({ bandera }) {
                     </Link>
                   </div>
                 </Card>
+                )}
               </Grid>
             ))}
           </Grid>
