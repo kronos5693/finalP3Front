@@ -1,23 +1,39 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import NavBar from '../components/NavBar/navBar';
 import { useParams } from 'react-router-dom';
 import { Container, CardContent, Typography, CardMedia, Card, Grid, Paper, TextField, Button } from '@mui/material';
-import Data from '../components/data/DataLugares.json';
+import axios from "axios";
 
 const PageCompra = () => {
   const { excu } = useParams();
-  const filtro = (excu, data) => {
-    return data.filter(excursion => excursion.excursion === excu);
-  };
+  const apiUrl = `http://localhost:3000/excursiones/${excu}`;
+  const [post, setPost] = useState([]);
+  const [disponibilidad, setDisponibilidad] = useState(1);
 
-  const resultado = filtro(excu, Data);
-  const [disponibilidad, setDisponibilidad] = useState(1); // Inicializado en 1
+  useEffect(() => {
+    axios.get(apiUrl)
+      .then((response) => {
+        setPost(response.data);
+        console.log(response.data);
+
+  
+        const nuevoPrecio = parseFloat(response.data.precio);
+        setCompra({
+          ...compra,
+          precio: nuevoPrecio,
+          total: nuevoPrecio * disponibilidad,
+        });
+      })
+      .catch((error) => {
+        console.error('Error en la solicitud:', error);
+      });
+  }, [apiUrl]);
 
   const [compra, setCompra] = useState({
-    fecha: '', // Aquí se guardará la fecha de compra
-    personas: 1, // Cantidad de personas seleccionadas
-    precio: resultado[0].precio, // Precio de la excursión
-    total: resultado[0].precio, // Total inicial (1 persona)
+    fecha: '',
+    personas: 1,
+    precio: 0,
+    total: 0,
   });
 
   const handleDisponibilidadChange = (event) => {
@@ -28,20 +44,18 @@ const PageCompra = () => {
       setCompra({
         ...compra,
         personas: newValue,
-        total: resultado[0].precio * newValue,
+        total: parseFloat(post.precio) * newValue,
       });
     }
   };
 
-  const today = new Date().toISOString().split('T')[0]; // Obtén la fecha actual en formato 'YYYY-MM-DD'
+  const today = new Date().toISOString().split('T')[0]; // Obtención de la fecha actual
 
   const handleCompra = () => {
-    // Muestra los detalles de la compra en la consola
     console.log('Detalles de la compra:', compra);
   };
 
-  // Comprueba si resultado[0] es undefined antes de acceder a sus propiedades
-  if (!resultado[0]) {
+  if (!post.excursion) {
     return <p>La excursión no se encuentra en la base de datos.</p>;
   }
 
@@ -55,15 +69,15 @@ const PageCompra = () => {
               <Card sx={{ maxWidth: 600, height: '100%' }}>
                 <CardMedia
                   sx={{ width: '100%', paddingTop: '56.25%' }}
-                  image={resultado[0].img}
+                  image={post.img}
                   title="green iguana"
                 />
                 <CardContent>
                   <Typography gutterBottom variant="h5" component="div">
-                    {resultado[0].excursion}
+                    {post.excursion}
                   </Typography>
                   <Typography variant="body2" color="text secondary">
-                    {resultado[0].descripcion}
+                    {post.descripcion}
                   </Typography>
                 </CardContent>
               </Card>
