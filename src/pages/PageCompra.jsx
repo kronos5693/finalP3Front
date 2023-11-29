@@ -1,58 +1,116 @@
 import React, { useEffect, useState } from 'react';
 import NavBar from '../components/NavBar/navBar';
 import { useParams } from 'react-router-dom';
-import { Container, CardContent, Typography, CardMedia, Card, Grid, Paper, TextField, Button } from '@mui/material';
-import axios from "axios";
+import { Container, CardContent, Typography, CardMedia, Card, Grid, Paper, TextField, Button, MenuItem } from '@mui/material';
+import axios from 'axios';
 
 const PageCompra = () => {
   const { excu } = useParams();
   const apiUrl = `http://localhost:3000/excursiones/${excu}`;
-  const [post, setPost] = useState([]);
+  const [post, setPost] = useState({});
   const [disponibilidad, setDisponibilidad] = useState(1);
+  const [horarioSeleccionado, setHorarioSeleccionado] = useState('');
+  const [compra, setCompra] = useState({
+    fecha: '',
+    personas: 1,
+    precio: 0,
+    total: 0,
+    horario: '',
+  });
 
   useEffect(() => {
     axios.get(apiUrl)
       .then((response) => {
-        setPost(response.data);
-        console.log(response.data);
+        const data = response.data;
+        console.log('Datos de la base de datos:', data);
+        setPost(data);
 
-  
-        const nuevoPrecio = parseFloat(response.data.precio);
-        setCompra({
-          ...compra,
+        const nuevoPrecio = parseFloat(data.precio);
+        setCompra(prevCompra => ({
+          ...prevCompra,
           precio: nuevoPrecio,
           total: nuevoPrecio * disponibilidad,
-        });
+        }));
+
+        // Establecer el primer horario como valor inicial
+        if (data.horarios && data.horarios.length > 0) {
+          setHorarioSeleccionado(data.horarios[0].turno);
+          setCompra(prevCompra => ({
+            ...prevCompra,
+            horario: data.horarios[0].turno,
+          }));
+        }
       })
       .catch((error) => {
         console.error('Error en la solicitud:', error);
       });
   }, [apiUrl]);
 
-  const [compra, setCompra] = useState({
-    fecha: '',
-    personas: 1,
-    precio: 0,
-    total: 0,
-  });
-
   const handleDisponibilidadChange = (event) => {
     const newValue = parseInt(event.target.value, 10);
     if (!isNaN(newValue) && newValue >= 1) {
       setDisponibilidad(newValue);
-      // Actualiza el estado de la compra cuando cambia la disponibilidad
-      setCompra({
-        ...compra,
+      setCompra(prevCompra => ({
+        ...prevCompra,
         personas: newValue,
         total: parseFloat(post.precio) * newValue,
-      });
+      }));
     }
   };
 
-  const today = new Date().toISOString().split('T')[0]; // Obtención de la fecha actual
+  const handleHorarioChange = (event) => {
+    const newHorario = event.target.value;
+    setHorarioSeleccionado(newHorario);
+    setCompra(prevCompra => ({
+      ...prevCompra,
+      horario: newHorario,
+    }));
+  };
+
+  const today = new Date().toISOString().split('T')[0];
 
   const handleCompra = () => {
+    // Asignar la fecha seleccionada al objeto de compra
+    setCompra(prevCompra => ({
+      ...prevCompra,
+      fecha: compra.fecha,
+    }));
+
     console.log('Detalles de la compra:', compra);
+
+    // Construir el objeto de compra a enviar al servidor
+    const compraData = {
+      excursion: post._id,
+      cantidadPersonas: compra.personas,
+      fechaCompra: new Date(),
+      fechaExcursion: compra.fecha,
+      turnoExcursion: compra.horario,
+      totalPagado: compra.total,
+    };
+
+    // Realizar la llamada a la API para realizar la compra
+    const apiUrlCompra = 'http://localhost:3000/compra/';
+    axios
+      .post(apiUrlCompra, compraData)
+      .then((response) => {
+        console.log('Compra realizada con éxito:', response.data);
+       
+      })
+      .catch((error) => {
+        console.error('Error al realizar la compra:', error);
+        // Imprimir información detallada sobre el error
+        if (error.response) {
+          
+          console.error('Respuesta del servidor:', error.response.data);
+          console.error('Código de estado:', error.response.status);
+        } else if (error.request) {
+        
+          console.error('No se recibió respuesta del servidor');
+        } else {
+          // Se produjo un error al configurar la solicitud o al procesar la respuesta
+          console.error('Error durante la configuración de la solicitud o procesamiento de la respuesta:', error.message);
+        }
+      });
   };
 
   if (!post.excursion) {
@@ -96,9 +154,9 @@ const PageCompra = () => {
                       shrink: true,
                     }}
                     fullWidth
-                    inputProps={{ min: today }} // Establece el mínimo a la fecha actual
-                    value={compra.fecha} // Asigna el valor del estado de compra a la fecha
-                    onChange={(event) => setCompra({ ...compra, fecha: event.target.value })} // Actualiza la fecha en el estado de compra
+                    inputProps={{ min: today }}
+                    value={compra.fecha}
+                    onChange={(event) => setCompra({ ...compra, fecha: event.target.value })}
                   />
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '20px' }}>
@@ -113,7 +171,28 @@ const PageCompra = () => {
                     onChange={handleDisponibilidadChange}
                     fullWidth
                   />
-                  <Typography variant="h6" gutterBottom style={{ marginTop: '20px' }}>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '20px' }}>
+                  <Typography variant="h6" gutterBottom>
+                    Horario de Excursión
+                  </Typography>
+                  <TextField
+                    id="horario"
+                    label="Horario de Excursión"
+                    value={horarioSeleccionado}
+                    onChange={handleHorarioChange}
+                    fullWidth
+                    select
+                  >
+                    {post.horarios && post.horarios.map((horario) => (
+                      <MenuItem key={horario.turno} value={horario.turno}>
+                        {horario.turno} ({horario.disponibilidad} disponibles)
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '20px' }}>
+                  <Typography variant="h6" gutterBottom>
                     Total a Pagar: ${compra.total}
                   </Typography>
                 </div>
