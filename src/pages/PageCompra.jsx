@@ -80,7 +80,8 @@ const PageCompra = () => {
 
     // Construir el objeto de compra a enviar al servidor
     const compraData = {
-      excursion: post._id,
+      idUsuario: "655233d77f776cc0856ea2ed",
+      idExcursion: post._id,
       cantidadPersonas: compra.personas,
       fechaCompra: new Date(),
       fechaExcursion: compra.fecha,
