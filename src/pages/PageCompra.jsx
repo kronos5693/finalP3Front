@@ -1,7 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import NavBar from '../components/NavBar/navBar';
 import { useParams } from 'react-router-dom';
-import { Container, CardContent, Typography, CardMedia, Card, Grid, Paper, TextField, Button, MenuItem } from '@mui/material';
+import {
+  Container,
+  CardContent,
+  Typography,
+  CardMedia,
+  Card,
+  Grid,
+  Paper,
+  TextField,
+  Button,
+  MenuItem,
+} from '@mui/material';
 import axios from 'axios';
 
 const PageCompra = () => {
@@ -10,8 +21,9 @@ const PageCompra = () => {
   const [post, setPost] = useState({});
   const [disponibilidad, setDisponibilidad] = useState(1);
   const [horarioSeleccionado, setHorarioSeleccionado] = useState('');
+  const today = new Date().toISOString().split('T')[0];
   const [compra, setCompra] = useState({
-    fecha: '',
+    fecha: today, // Inicializar con la fecha actual
     personas: 1,
     precio: 0,
     total: 0,
@@ -19,14 +31,15 @@ const PageCompra = () => {
   });
 
   useEffect(() => {
-    axios.get(apiUrl)
+    axios
+      .get(apiUrl)
       .then((response) => {
         const data = response.data;
         console.log('Datos de la base de datos:', data);
         setPost(data);
 
         const nuevoPrecio = parseFloat(data.precio);
-        setCompra(prevCompra => ({
+        setCompra((prevCompra) => ({
           ...prevCompra,
           precio: nuevoPrecio,
           total: nuevoPrecio * disponibilidad,
@@ -35,7 +48,7 @@ const PageCompra = () => {
         // Establecer el primer horario como valor inicial
         if (data.horarios && data.horarios.length > 0) {
           setHorarioSeleccionado(data.horarios[0].turno);
-          setCompra(prevCompra => ({
+          setCompra((prevCompra) => ({
             ...prevCompra,
             horario: data.horarios[0].turno,
           }));
@@ -50,7 +63,7 @@ const PageCompra = () => {
     const newValue = parseInt(event.target.value, 10);
     if (!isNaN(newValue) && newValue >= 1) {
       setDisponibilidad(newValue);
-      setCompra(prevCompra => ({
+      setCompra((prevCompra) => ({
         ...prevCompra,
         personas: newValue,
         total: parseFloat(post.precio) * newValue,
@@ -61,17 +74,15 @@ const PageCompra = () => {
   const handleHorarioChange = (event) => {
     const newHorario = event.target.value;
     setHorarioSeleccionado(newHorario);
-    setCompra(prevCompra => ({
+    setCompra((prevCompra) => ({
       ...prevCompra,
       horario: newHorario,
     }));
   };
 
-  const today = new Date().toISOString().split('T')[0];
-
   const handleCompra = () => {
     // Asignar la fecha seleccionada al objeto de compra
-    setCompra(prevCompra => ({
+    setCompra((prevCompra) => ({
       ...prevCompra,
       fecha: compra.fecha,
     }));
@@ -80,7 +91,7 @@ const PageCompra = () => {
 
     // Construir el objeto de compra a enviar al servidor
     const compraData = {
-      idUsuario: "655233d77f776cc0856ea2ed",
+      idUsuario: '655233d77f776cc0856ea2ed',
       idExcursion: post._id,
       cantidadPersonas: compra.personas,
       fechaCompra: new Date(),
@@ -95,21 +106,35 @@ const PageCompra = () => {
       .post(apiUrlCompra, compraData)
       .then((response) => {
         console.log('Compra realizada con éxito:', response.data);
-       
+
+        // Después de la compra, actualizar la disponibilidad en la base de datos
+        const nuevaDisponibilidad =
+          post.horarios.find((horario) => horario.turno === compra.horario).disponibilidad -
+          compra.personas;
+
+        const apiUrlUpdateDisponibilidad = `http://localhost:3000/excursiones/${post._id}`;
+        axios
+          .patch(apiUrlUpdateDisponibilidad, { disponibilidad: nuevaDisponibilidad })
+          .then(() => {
+            console.log('Disponibilidad actualizada con éxito.');
+          })
+          .catch((error) => {
+            console.error('Error al actualizar la disponibilidad:', error);
+          });
       })
       .catch((error) => {
         console.error('Error al realizar la compra:', error);
         // Imprimir información detallada sobre el error
         if (error.response) {
-          
           console.error('Respuesta del servidor:', error.response.data);
           console.error('Código de estado:', error.response.status);
         } else if (error.request) {
-        
           console.error('No se recibió respuesta del servidor');
         } else {
-          // Se produjo un error al configurar la solicitud o al procesar la respuesta
-          console.error('Error durante la configuración de la solicitud o procesamiento de la respuesta:', error.message);
+          console.error(
+            'Error durante la configuración de la solicitud o procesamiento de la respuesta:',
+            error.message
+          );
         }
       });
   };
@@ -185,11 +210,12 @@ const PageCompra = () => {
                     fullWidth
                     select
                   >
-                    {post.horarios && post.horarios.map((horario) => (
-                      <MenuItem key={horario.turno} value={horario.turno}>
-                        {horario.turno} ({horario.disponibilidad} disponibles)
-                      </MenuItem>
-                    ))}
+                    {post.horarios &&
+                      post.horarios.map((horario) => (
+                        <MenuItem key={horario.turno} value={horario.turno}>
+                          {horario.turno} ({horario.disponibilidad} disponibles)
+                        </MenuItem>
+                      ))}
                   </TextField>
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '20px' }}>
@@ -210,3 +236,4 @@ const PageCompra = () => {
 };
 
 export default PageCompra;
+
