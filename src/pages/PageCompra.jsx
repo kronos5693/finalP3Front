@@ -135,8 +135,9 @@ const PageCompra = () => {
             'Error durante la configuración de la solicitud o procesamiento de la respuesta:',
             error.message
           );
-        }
+        }     
       });
+      window.location.reload(true);
   };
 
   if (!post.excursion) {
