@@ -4,11 +4,10 @@ import Card from "@mui/material/Card";
 import Grid from "@mui/material/Grid";
 import CardContent from "@mui/material/CardContent";
 import Typography from "@mui/material/Typography";
-//import Data from "../data/DataLugares.json";
 import CardMedia from "@mui/material/CardMedia";
-import { Button, CardActionArea, Box } from "@mui/material";
+import { Button, CardActionArea } from "@mui/material";
 import { Link } from "react-router-dom";
-import axios from 'axios';  
+import api from '../../services/api';
 
 function getRandomItems(array, count) {
   const shuffled = array.slice();
@@ -28,14 +27,54 @@ function getRandomItems(array, count) {
 }
 
 function Tarjeta({ bandera }) {
-  const apiUrl = "http://localhost:3000/excursiones";
   const [post, setPost] = React.useState([]);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState(null);
+
   React.useEffect(() => {
-    axios.get(apiUrl).then((response) => {
-      console.log(response.data);
-      setPost(response.data);
-    });
+    const fetchExcursiones = async () => {
+      try {
+        const response = await api.get('/excursiones');
+        console.log('Excursiones:', response.data);
+        setPost(response.data);
+      } catch (error) {
+        console.error('Error al obtener excursiones:', error);
+        setError('Error al cargar las excursiones');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchExcursiones();
   }, []);
+
+  if (loading) {
+    return (
+      <Container maxWidth="lg">
+        <Card>
+          <CardContent>
+            <Typography variant="h5" align="center">
+              Cargando excursiones...
+            </Typography>
+          </CardContent>
+        </Card>
+      </Container>
+    );
+  }
+
+  if (error) {
+    return (
+      <Container maxWidth="lg">
+        <Card>
+          <CardContent>
+            <Typography variant="h5" align="center" color="error">
+              {error}
+            </Typography>
+          </CardContent>
+        </Card>
+      </Container>
+    );
+  }
 
   let randomItems = [];
   if (bandera) {
@@ -49,42 +88,41 @@ function Tarjeta({ bandera }) {
       <Card>
         <CardContent>
           <Typography variant="h4" align="center">
-            LOS MAS VISITADOS
+            LOS MÁS VISITADOS
           </Typography>
           <Grid container spacing={5} style={{ marginTop: "25px" }}>
             {randomItems.map((point, index) => (
               <Grid item xs={12} sm={4} key={index}>
-               {point && point.img && point.excursion && point.descripcion && point.precio && (
-
-                <Card sx={{ maxWidth: 345 }} style={{ padding: "10px", marginTop: "30px", display: "flex", flexDirection: "column" }}>
-                  <CardActionArea>
-                    <CardMedia
-                      component="img"
-                      height="140"
-                      image={point.img}
-                      alt={point.excursion}
-                      style={{ borderRadius: "5px" }}
-                    />
-                    <CardContent>
-                      <Typography gutterBottom variant="h5" component="div">
-                        {point.excursion}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary" align="justify">
-                        {point.descripcion}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        Precio: {point.precio}
-                      </Typography>
-                    </CardContent>
-                  </CardActionArea>
-                  <div style={{ display: "flex" }}>
-                    <Link to={`/compra/${point.excursion}`} style={{ width: "100%" }}>
-                      <Button variant="contained" size="small" style={{ width: "100%" }}>
-                        COMPRAR
-                      </Button>
-                    </Link>
-                  </div>
-                </Card>
+                {point && point.img && point.excursion && point.descripcion && point.precio && (
+                  <Card sx={{ maxWidth: 345 }} style={{ padding: "10px", marginTop: "30px", display: "flex", flexDirection: "column" }}>
+                    <CardActionArea>
+                      <CardMedia
+                        component="img"
+                        height="140"
+                        image={point.img}
+                        alt={point.excursion}
+                        style={{ borderRadius: "5px" }}
+                      />
+                      <CardContent>
+                        <Typography gutterBottom variant="h5" component="div">
+                          {point.excursion}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary" align="justify">
+                          {point.descripcion}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          Precio: ${point.precio}
+                        </Typography>
+                      </CardContent>
+                    </CardActionArea>
+                    <div style={{ display: "flex" }}>
+                      <Link to={`/compra/${point.excursion}`} style={{ width: "100%" }}>
+                        <Button variant="contained" size="small" style={{ width: "100%" }}>
+                          COMPRAR
+                        </Button>
+                      </Link>
+                    </div>
+                  </Card>
                 )}
               </Grid>
             ))}

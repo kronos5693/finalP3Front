@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import NavBar from '../components/NavBar/navBar';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import {
   Container,
   CardContent,
@@ -12,18 +12,25 @@ import {
   TextField,
   Button,
   MenuItem,
+  Alert,
 } from '@mui/material';
-import axios from 'axios';
+import api from '../services/api';
+import { useAuth } from '../context/AuthContext';
 
 const PageCompra = () => {
   const { excu } = useParams();
-  const apiUrl = `http://localhost:3000/excursiones/${excu}`;
+  const { usuario, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
+  const apiUrl = `/excursiones/${excu}`;
   const [post, setPost] = useState({});
   const [disponibilidad, setDisponibilidad] = useState(1);
   const [horarioSeleccionado, setHorarioSeleccionado] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const today = new Date().toISOString().split('T')[0];
   const [compra, setCompra] = useState({
-    fecha: today, // Inicializar con la fecha actual
+    fecha: today,
     personas: 1,
     precio: 0,
     total: 0,
@@ -31,7 +38,13 @@ const PageCompra = () => {
   });
 
   useEffect(() => {
-    axios
+    // Verificar si el usuario está autenticado
+    if (!isAuthenticated) {
+      navigate('/login');
+      return;
+    }
+
+    api
       .get(apiUrl)
       .then((response) => {
         const data = response.data;
@@ -45,7 +58,6 @@ const PageCompra = () => {
           total: nuevoPrecio * disponibilidad,
         }));
 
-        // Establecer el primer horario como valor inicial
         if (data.horarios && data.horarios.length > 0) {
           setHorarioSeleccionado(data.horarios[0].turno);
           setCompra((prevCompra) => ({
@@ -56,8 +68,9 @@ const PageCompra = () => {
       })
       .catch((error) => {
         console.error('Error en la solicitud:', error);
+        setError('Error al cargar la excursión');
       });
-  }, [apiUrl]);
+  }, [apiUrl, isAuthenticated, navigate]);
 
   const handleDisponibilidadChange = (event) => {
     const newValue = parseInt(event.target.value, 10);
@@ -80,18 +93,19 @@ const PageCompra = () => {
     }));
   };
 
-  const handleCompra = () => {
-    // Asignar la fecha seleccionada al objeto de compra
-    setCompra((prevCompra) => ({
-      ...prevCompra,
-      fecha: compra.fecha,
-    }));
+  const handleCompra = async () => {
+    if (!isAuthenticated || !usuario) {
+      setError('Debes iniciar sesión para realizar una compra');
+      navigate('/login');
+      return;
+    }
 
-    console.log('Detalles de la compra:', compra);
+    setLoading(true);
+    setError('');
+    setSuccess('');
 
-    // Construir el objeto de compra a enviar al servidor
     const compraData = {
-      idUsuario: '655233d77f776cc0856ea2ed',
+      idUsuario: usuario.id,  // Usar el ID del usuario autenticado
       idExcursion: post._id,
       cantidadPersonas: compra.personas,
       fechaCompra: new Date(),
@@ -100,48 +114,40 @@ const PageCompra = () => {
       totalPagado: compra.total,
     };
 
-    // Realizar la llamada a la API para realizar la compra
-    const apiUrlCompra = 'http://localhost:3000/compra/';
-    axios
-      .post(apiUrlCompra, compraData)
-      .then((response) => {
-        console.log('Compra realizada con éxito:', response.data);
-
-        // Después de la compra, actualizar la disponibilidad en la base de datos
-        const nuevaDisponibilidad =
-          post.horarios.find((horario) => horario.turno === compra.horario).disponibilidad -
-          compra.personas;
-
-        const apiUrlUpdateDisponibilidad = `http://localhost:3000/excursiones/${post._id}`;
-        axios
-          .patch(apiUrlUpdateDisponibilidad, { disponibilidad: nuevaDisponibilidad })
-          .then(() => {
-            console.log('Disponibilidad actualizada con éxito.');
-          })
-          .catch((error) => {
-            console.error('Error al actualizar la disponibilidad:', error);
-          });
-      })
-      .catch((error) => {
-        console.error('Error al realizar la compra:', error);
-        // Imprimir información detallada sobre el error
-        if (error.response) {
-          console.error('Respuesta del servidor:', error.response.data);
-          console.error('Código de estado:', error.response.status);
-        } else if (error.request) {
-          console.error('No se recibió respuesta del servidor');
-        } else {
-          console.error(
-            'Error durante la configuración de la solicitud o procesamiento de la respuesta:',
-            error.message
-          );
-        }     
-      });
-      window.location.reload(true);
+    try {
+      const response = await api.post('/compra/', compraData);
+      console.log('Compra realizada con éxito:', response.data);
+      setSuccess('¡Compra realizada con éxito!');
+      
+      // Esperar un momento antes de recargar
+      setTimeout(() => {
+        navigate('/');
+      }, 2000);
+    } catch (error) {
+      console.error('Error al realizar la compra:', error);
+      
+      if (error.response) {
+        setError(error.response.data.mensaje || 'Error al realizar la compra');
+        console.error('Respuesta del servidor:', error.response.data);
+      } else if (error.request) {
+        setError('No se recibió respuesta del servidor');
+      } else {
+        setError('Error al procesar la compra');
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (!post.excursion) {
-    return <p>La excursión no se encuentra en la base de datos.</p>;
+    return (
+      <>
+        <NavBar />
+        <Container>
+          <Typography>La excursión no se encuentra en la base de datos.</Typography>
+        </Container>
+      </>
+    );
   }
 
   return (
@@ -149,20 +155,33 @@ const PageCompra = () => {
       <NavBar />
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
         <Container maxWidth="xl">
+          {error && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {error}
+            </Alert>
+          )}
+          {success && (
+            <Alert severity="success" sx={{ mb: 2 }}>
+              {success}
+            </Alert>
+          )}
           <Grid container spacing={2}>
             <Grid item xs={12} md={6}>
               <Card sx={{ maxWidth: 600, height: '100%' }}>
                 <CardMedia
                   sx={{ width: '100%', paddingTop: '56.25%' }}
                   image={post.img}
-                  title="green iguana"
+                  title={post.excursion}
                 />
                 <CardContent>
                   <Typography gutterBottom variant="h5" component="div">
                     {post.excursion}
                   </Typography>
-                  <Typography variant="body2" color="text secondary">
+                  <Typography variant="body2" color="text.secondary">
                     {post.descripcion}
+                  </Typography>
+                  <Typography variant="h6" color="primary" sx={{ mt: 2 }}>
+                    Precio: ${post.precio}
                   </Typography>
                 </CardContent>
               </Card>
@@ -188,7 +207,7 @@ const PageCompra = () => {
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '20px' }}>
                   <Typography variant="h6" gutterBottom>
-                    Numero de Personas
+                    Número de Personas
                   </Typography>
                   <TextField
                     id="disponibilidad"
@@ -224,8 +243,14 @@ const PageCompra = () => {
                     Total a Pagar: ${compra.total}
                   </Typography>
                 </div>
-                <Button variant="contained" color="primary" style={{ marginTop: '20px' }} onClick={handleCompra}>
-                  Comprar Excursión
+                <Button 
+                  variant="contained" 
+                  color="primary" 
+                  style={{ marginTop: '20px' }} 
+                  onClick={handleCompra}
+                  disabled={loading}
+                >
+                  {loading ? 'Procesando...' : 'Comprar Excursión'}
                 </Button>
               </Paper>
             </Grid>
@@ -237,4 +262,3 @@ const PageCompra = () => {
 };
 
 export default PageCompra;
-

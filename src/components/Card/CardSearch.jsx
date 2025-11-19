@@ -4,29 +4,73 @@ import Card from "@mui/material/Card";
 import Grid from "@mui/material/Grid";
 import CardContent from "@mui/material/CardContent";
 import Typography from "@mui/material/Typography";
-import Data from "../data/DataLugares.json";
 import CardMedia from "@mui/material/CardMedia";
-import { Button, CardActionArea } from "@mui/material";
+import { Button, CardActionArea, CircularProgress, Box } from "@mui/material";
 import { Link } from "react-router-dom";
-import axios from "axios";
+import api from '../../services/api';
 
 function CardSearch({ provincia }) {
- // const excursiones = Data.filter((excursion) => excursion.provincia === provincia);
-  const prov = provincia.toString(); 
-  const apiUrl = `http://localhost:3000/excursiones/provincia/${prov}`;
-
   const [excursiones, setExcursiones] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    axios.get(apiUrl)
-      .then((response) => {
-        console.log(response.data);
+    const fetchExcursiones = async () => {
+      try {
+        setLoading(true);
+        const response = await api.get(`/excursiones/provincia/${provincia}`);
+        console.log('Excursiones de provincia:', response.data);
         setExcursiones(response.data);
-      })
-      .catch((error) => {
-        console.error('Error en la solicitud:', error);
-      });
-  }, [apiUrl]);
+      } catch (error) {
+        console.error('Error al obtener excursiones:', error);
+        setError('Error al cargar las excursiones de esta provincia');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (provincia) {
+      fetchExcursiones();
+    }
+  }, [provincia]);
+
+  if (loading) {
+    return (
+      <Container maxWidth="lg" sx={{ mt: 4 }}>
+        <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+          <CircularProgress />
+        </Box>
+      </Container>
+    );
+  }
+
+  if (error) {
+    return (
+      <Container maxWidth="lg" sx={{ mt: 4 }}>
+        <Card>
+          <CardContent>
+            <Typography variant="h5" align="center" color="error">
+              {error}
+            </Typography>
+          </CardContent>
+        </Card>
+      </Container>
+    );
+  }
+
+  if (excursiones.length === 0) {
+    return (
+      <Container maxWidth="lg" sx={{ mt: 4 }}>
+        <Card>
+          <CardContent>
+            <Typography variant="h5" align="center">
+              No se encontraron excursiones en {provincia}
+            </Typography>
+          </CardContent>
+        </Card>
+      </Container>
+    );
+  }
 
   return (
     <Container maxWidth="lg">
@@ -37,7 +81,7 @@ function CardSearch({ provincia }) {
           </Typography>
           <Grid container spacing={5} style={{ marginTop: "25px" }}>
             {excursiones.map((point, index) => (
-              <Grid item xs={12} sm={4} key={index}>
+              <Grid item xs={12} sm={4} key={point._id || index}>
                 <Card sx={{ maxWidth: 345 }} style={{ padding: "10px", marginTop: "30px", display: "flex", flexDirection: "column" }}>
                   <CardActionArea>
                     <CardMedia
@@ -54,8 +98,8 @@ function CardSearch({ provincia }) {
                       <Typography variant="body2" color="text.secondary" align="justify">
                         {point.descripcion}
                       </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        Precio: {point.precio}
+                      <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                        Precio: ${point.precio}
                       </Typography>
                     </CardContent>
                   </CardActionArea>
