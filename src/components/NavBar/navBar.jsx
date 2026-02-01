@@ -7,15 +7,14 @@ import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import Avatar from '@mui/material/Avatar';
+import Badge from '@mui/material/Badge';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faMap } from "@fortawesome/free-solid-svg-icons";
-import { faHome } from "@fortawesome/free-solid-svg-icons";
-import { faBomb } from "@fortawesome/free-solid-svg-icons";
-import { faIdBadge } from "@fortawesome/free-solid-svg-icons";
+import { faMap, faHome, faBomb, faIdBadge } from "@fortawesome/free-solid-svg-icons";
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { useCarrito } from '../../context/CarritoContext';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import './navBar.css';
 
 const navArrayLinks = [
@@ -43,8 +42,11 @@ const navArrayLinks = [
 
 export default function NavBar() {
   const { usuario, logout, isAuthenticated } = useAuth();
+  const { cantidadItems } = useCarrito();
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = React.useState(null);
+
+  const isAdmin = usuario?.rol === 'admin';
 
   const handleMenu = (event) => {
     setAnchorEl(event.currentTarget);
@@ -60,16 +62,24 @@ export default function NavBar() {
     navigate('/');
   };
 
-  const handleProfile = () => {
+  const handlePerfil = () => {
     handleClose();
-    // Puedes crear una página de perfil más adelante
-    alert('Funcionalidad de perfil próximamente');
+    navigate('/perfil');
+  };
+
+  const handleCarrito = () => {
+    navigate('/carrito');
   };
 
   return (
     <Box sx={{ flexGrow: 1 }}>
       <AppBar position="static">
-        <Toolbar className="toolbar">
+        <Toolbar sx={{ 
+          display: 'flex', 
+          alignItems: 'center',
+          minHeight: '64px'
+        }}>
+          {/* Links de navegación */}
           {navArrayLinks.map((item, index) => (
             <Button
               key={index}
@@ -88,27 +98,63 @@ export default function NavBar() {
             </Button>
           ))}
 
+          {/* Espaciador flexible */}
           <Box sx={{ flex: 1 }} /> 
 
-          <div className="login-signup-buttons">
+          {/* Sección derecha - ORDEN: Nombre, Perfil, Carrito */}
+          <Box sx={{ 
+            display: 'flex', 
+            alignItems: 'center',
+            gap: 1
+          }}>
             {isAuthenticated ? (
               <>
+                {/* 1. NOMBRE - Saludo al usuario */}
                 <Typography 
                   variant="body1" 
                   sx={{ 
-                    marginRight: 2,
-                    display: { xs: 'none', sm: 'block' } 
+                    display: { xs: 'none', sm: 'block' },
+                    whiteSpace: 'nowrap'
                   }}
                 >
                   Hola, {usuario?.nombre}!
                 </Typography>
+
+                {/* 2. PERFIL - Icono de perfil */}
                 <IconButton
                   size="large"
                   onClick={handleMenu}
                   color="inherit"
+                  sx={{ 
+                    display: 'flex',
+                    alignItems: 'center'
+                  }}
                 >
                   <AccountCircleIcon />
                 </IconButton>
+
+                {/* 3. CARRITO - Solo visible para usuarios normales */}
+                {!isAdmin && (
+                  <IconButton
+                    size="large"
+                    color="inherit"
+                    onClick={handleCarrito}
+                    sx={{ 
+                      display: 'flex',
+                      alignItems: 'center'
+                    }}
+                  >
+                    <Badge 
+                      badgeContent={cantidadItems} 
+                      color="error"
+                      max={99}
+                    >
+                      <ShoppingCartIcon />
+                    </Badge>
+                  </IconButton>
+                )}
+
+                {/* Menú desplegable */}
                 <Menu
                   anchorEl={anchorEl}
                   open={Boolean(anchorEl)}
@@ -127,13 +173,28 @@ export default function NavBar() {
                       {usuario?.email}
                     </Typography>
                   </MenuItem>
-                  <MenuItem onClick={handleProfile}>Mi Perfil</MenuItem>
-                  {usuario?.rol === 'admin' && (
+
+                  <MenuItem onClick={handlePerfil}>
+                    Mi Perfil
+                  </MenuItem>
+
+                  {/* PANEL ADMIN - Solo para administradores */}
+                  {isAdmin && (
                     <MenuItem component={Link} to="/admin" onClick={handleClose}>
                       Panel Admin
                     </MenuItem>
                   )}
-                  <MenuItem onClick={handleLogout}>Cerrar Sesión</MenuItem>
+
+                  {/* MIS RESERVAS - Solo para usuarios normales */}
+                  {!isAdmin && (
+                    <MenuItem component={Link} to="/mis-reservas" onClick={handleClose}>
+                      Mis Reservas
+                    </MenuItem>
+                  )}
+
+                  <MenuItem onClick={handleLogout}>
+                    Cerrar Sesión
+                  </MenuItem>
                 </Menu>
               </>
             ) : (
@@ -146,7 +207,7 @@ export default function NavBar() {
                 </Button>
               </>
             )}
-          </div>
+          </Box>
         </Toolbar>
       </AppBar>
     </Box>

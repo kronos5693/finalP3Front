@@ -4,7 +4,7 @@ import {
   Container, Card, CardContent, Typography, CardMedia, 
   Grid, Paper, Button, Alert, CircularProgress, Box,
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-  Dialog, DialogTitle, DialogContent, DialogActions, TextField, IconButton
+  IconButton, TextField, Dialog, DialogTitle, DialogContent, DialogActions
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
@@ -27,9 +27,8 @@ const PageReserva = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   
-  // Estados para el diálogo de cantidad
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [selectedSalida, setSelectedSalida] = useState(null);
+  const [cantidadDialog, setCantidadDialog] = useState(false);
+  const [salidaSeleccionada, setSalidaSeleccionada] = useState(null);
   const [cantidadPersonas, setCantidadPersonas] = useState(1);
   const [subtotal, setSubtotal] = useState(0);
 
@@ -46,11 +45,9 @@ const PageReserva = () => {
       setLoading(true);
       setError('');
       
-      // Obtener la excursión por nombre
       const excursionData = await api.get(`/excursiones/nombre/${nombreExcursion}`);
       setExcursion(excursionData.data);
 
-      // Obtener las salidas disponibles para esta excursión
       const salidasData = await salidaService.obtenerSalidasPorExcursion(
         excursionData.data._id,
         { futuras: 'true', habilitadas: 'true' }
@@ -64,32 +61,31 @@ const PageReserva = () => {
     }
   };
 
-  const openQuantityDialog = (salida) => {
-    setSelectedSalida(salida);
+  const abrirDialogoCantidad = (salida) => {
+    setSalidaSeleccionada(salida);
     setCantidadPersonas(1);
-    setSubtotal(salida.excursion.precio * 1);
-    setDialogOpen(true);
+    setSubtotal(salida.precioPersona || 0);
+    setCantidadDialog(true);
   };
 
-  const updateQuantity = (newQuantity) => {
-    if (newQuantity < 1) return;
-    if (newQuantity > (selectedSalida?.disponibilidad || 1)) return;
+  const actualizarCantidad = (nuevaCantidad) => {
+    if (nuevaCantidad < 1) return;
+    if (nuevaCantidad > (salidaSeleccionada?.disponibilidad || 1)) return;
     
-    setCantidadPersonas(newQuantity);
-    setSubtotal(newQuantity * (selectedSalida?.excursion?.precio || 0));
+    setCantidadPersonas(nuevaCantidad);
+    setSubtotal(nuevaCantidad * (salidaSeleccionada?.precioPersona || 0));
   };
 
-  const handleAddToCart = async () => {
-    if (!selectedSalida) return;
+  const handleAgregarAlCarrito = async () => {
+    if (!salidaSeleccionada) return;
     
     try {
-      await agregarAlCarrito(selectedSalida._id, cantidadPersonas);
-      setSuccess(`¡Agregado al carrito! ${cantidadPersonas} persona(s) para la salida`);
-      setDialogOpen(false);
+      await agregarAlCarrito(salidaSeleccionada._id, cantidadPersonas);
+      setSuccess(`¡Agregado al carrito! ${cantidadPersonas} persona(s) para la salida del ${salidaSeleccionada.horario}`);
+      setCantidadDialog(false);
       
-      // Actualizar disponibilidad localmente
       setSalidas(salidas.map(salida => 
-        salida._id === selectedSalida._id 
+        salida._id === salidaSeleccionada._id 
           ? { ...salida, disponibilidad: salida.disponibilidad - cantidadPersonas }
           : salida
       ));
@@ -97,25 +93,48 @@ const PageReserva = () => {
       setTimeout(() => setSuccess(''), 3000);
     } catch (error) {
       setError(error.response?.data?.mensaje || 'Error al agregar al carrito');
-      setDialogOpen(false);
+      setCantidadDialog(false);
     }
   };
 
-  const groupSalidasByDate = () => {
-    const grouped = {};
+  const horarioANumero = (horario) => {
+    const numero = parseInt(horario.replace('hs', ''));
+    return numero;
+  };
+
+  const agruparSalidasPorFecha = () => {
+    const agrupadas = {};
+    
     salidas.forEach(salida => {
-      const date = new Date(salida.fecha).toLocaleDateString('es-AR', {
+      const fecha = new Date(salida.fecha);
+      const dia = String(fecha.getUTCDate()).padStart(2, '0');
+      const mes = String(fecha.getUTCMonth() + 1).padStart(2, '0');
+      const anio = fecha.getUTCFullYear();
+      
+      const nombreDia = fecha.toLocaleDateString('es-AR', { 
         weekday: 'long',
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
+        timeZone: 'UTC'
       });
-      if (!grouped[date]) {
-        grouped[date] = [];
+      const nombreMes = fecha.toLocaleDateString('es-AR', { 
+        month: 'long',
+        timeZone: 'UTC'
+      });
+      
+      const textoFecha = `${nombreDia}, ${dia} de ${nombreMes} de ${anio}`;
+      
+      if (!agrupadas[textoFecha]) {
+        agrupadas[textoFecha] = [];
       }
-      grouped[date].push(salida);
+      agrupadas[textoFecha].push(salida);
     });
-    return grouped;
+    
+    Object.keys(agrupadas).forEach(fecha => {
+      agrupadas[fecha].sort((a, b) => {
+        return horarioANumero(a.horario) - horarioANumero(b.horario);
+      });
+    });
+    
+    return agrupadas;
   };
 
   if (loading) {
@@ -157,7 +176,7 @@ const PageReserva = () => {
     );
   }
 
-  const groupedSalidas = groupSalidasByDate();
+  const salidasAgrupadas = agruparSalidasPorFecha();
 
   return (
     <>
@@ -177,33 +196,47 @@ const PageReserva = () => {
 
         <Grid container spacing={4}>
           <Grid item xs={12} md={6}>
-            <Card>
+            <Card sx={{ 
+              display: 'flex', 
+              flexDirection: 'column', 
+              alignItems: 'center',
+              height: '100%'
+            }}>
               <CardMedia
                 component="img"
                 image={excursion.img}
                 alt={excursion.excursion}
-                sx={{ height: 400, objectFit: 'cover' }}
+                sx={{ 
+                  height: 400, 
+                  width: '100%',
+                  objectFit: 'cover' 
+                }}
               />
-              <CardContent>
+              <CardContent sx={{ 
+                textAlign: 'center', 
+                width: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                px: 3
+              }}>
                 <Typography variant="h4" gutterBottom>
                   {excursion.excursion}
                 </Typography>
-                <Typography variant="body1" paragraph>
+                <Typography 
+                  variant="body1" 
+                  paragraph 
+                  sx={{ 
+                    textAlign: 'justify',
+                    maxWidth: '90%',
+                    mb: 2
+                  }}
+                >
                   {excursion.descripcion}
                 </Typography>
-                <Typography variant="h5" color="primary">
-                  Precio: ${excursion.precio} por persona
-                </Typography>
-                {excursion.duracion && (
-                  <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                    ⏱️ Duración: {excursion.duracion}
-                  </Typography>
-                )}
-                {excursion.dificultad && (
-                  <Typography variant="body2" color="text.secondary">
-                    🏔️ Dificultad: {excursion.dificultad}
-                  </Typography>
-                )}
+                {/*<Typography variant="h6" color="primary" sx={{ mt: 1 }}>
+                  Precio: Desde ${excursion.precio || 'Consultar'}
+                </Typography>*/}
               </CardContent>
             </Card>
           </Grid>
@@ -223,10 +256,10 @@ const PageReserva = () => {
                 </Alert>
               ) : (
                 <Box sx={{ mt: 2 }}>
-                  {Object.entries(groupedSalidas).map(([date, salidasDelDia]) => (
-                    <Box key={date} sx={{ mb: 4 }}>
+                  {Object.entries(salidasAgrupadas).map(([fecha, salidasDelDia]) => (
+                    <Box key={fecha} sx={{ mb: 4 }}>
                       <Typography variant="h6" color="primary" gutterBottom sx={{ borderBottom: '2px solid', borderColor: 'primary.main', pb: 1 }}>
-                        📅 {date}
+                        📅 {fecha}
                       </Typography>
                       <TableContainer>
                         <Table size="small">
@@ -249,7 +282,7 @@ const PageReserva = () => {
                               >
                                 <TableCell>
                                   <Typography variant="body2" fontWeight="medium">
-                                    🕒 {salida.horario}
+                                    🕐 {salida.horario}
                                   </Typography>
                                 </TableCell>
                                 <TableCell align="center">
@@ -271,14 +304,14 @@ const PageReserva = () => {
                                 </TableCell>
                                 <TableCell align="center">
                                   <Typography variant="body2" fontWeight="medium">
-                                    ${salida.excursion?.precio || 0}
+                                    ${salida.precioPersona || 0}
                                   </Typography>
                                 </TableCell>
                                 <TableCell align="center">
                                   <Button
                                     variant="contained"
                                     size="small"
-                                    onClick={() => openQuantityDialog(salida)}
+                                    onClick={() => abrirDialogoCantidad(salida)}
                                     disabled={salida.disponibilidad === 0}
                                     startIcon={<ShoppingCartIcon />}
                                   >
@@ -305,10 +338,9 @@ const PageReserva = () => {
           </Grid>
         </Grid>
 
-        {/* Diálogo para seleccionar cantidad */}
         <Dialog 
-          open={dialogOpen} 
-          onClose={() => setDialogOpen(false)}
+          open={cantidadDialog} 
+          onClose={() => setCantidadDialog(false)}
           maxWidth="xs"
           fullWidth
         >
@@ -316,18 +348,18 @@ const PageReserva = () => {
             Seleccionar cantidad de personas
           </DialogTitle>
           <DialogContent>
-            {selectedSalida && (
+            {salidaSeleccionada && (
               <Box sx={{ mt: 2 }}>
                 <Typography variant="body1" gutterBottom>
-                  Salida: {selectedSalida.horario} - {new Date(selectedSalida.fecha).toLocaleDateString('es-AR')}
+                  Salida: {salidaSeleccionada.horario} - {new Date(salidaSeleccionada.fecha).toLocaleDateString('es-AR')}
                 </Typography>
                 <Typography variant="body2" color="text.secondary" gutterBottom>
-                  Disponibilidad: {selectedSalida.disponibilidad} lugares
+                  Disponibilidad: {salidaSeleccionada.disponibilidad} lugares
                 </Typography>
                 
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', my: 3 }}>
                   <IconButton 
-                    onClick={() => updateQuantity(cantidadPersonas - 1)}
+                    onClick={() => actualizarCantidad(cantidadPersonas - 1)}
                     disabled={cantidadPersonas <= 1}
                   >
                     <RemoveIcon />
@@ -336,10 +368,10 @@ const PageReserva = () => {
                   <TextField
                     type="number"
                     value={cantidadPersonas}
-                    onChange={(e) => updateQuantity(parseInt(e.target.value) || 1)}
+                    onChange={(e) => actualizarCantidad(parseInt(e.target.value) || 1)}
                     inputProps={{ 
                       min: 1, 
-                      max: selectedSalida.disponibilidad,
+                      max: salidaSeleccionada.disponibilidad,
                       style: { textAlign: 'center', fontSize: '1.5rem', width: '80px' }
                     }}
                     variant="outlined"
@@ -347,8 +379,8 @@ const PageReserva = () => {
                   />
                   
                   <IconButton 
-                    onClick={() => updateQuantity(cantidadPersonas + 1)}
-                    disabled={cantidadPersonas >= selectedSalida.disponibilidad}
+                    onClick={() => actualizarCantidad(cantidadPersonas + 1)}
+                    disabled={cantidadPersonas >= salidaSeleccionada.disponibilidad}
                   >
                     <AddIcon />
                   </IconButton>
@@ -360,7 +392,7 @@ const PageReserva = () => {
                   </Typography>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                     <Typography>Precio unitario:</Typography>
-                    <Typography>${selectedSalida.excursion?.precio || 0}</Typography>
+                    <Typography>${salidaSeleccionada.precioPersona || 0}</Typography>
                   </Box>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                     <Typography>Cantidad:</Typography>
@@ -377,12 +409,12 @@ const PageReserva = () => {
             )}
           </DialogContent>
           <DialogActions>
-            <Button onClick={() => setDialogOpen(false)}>
+            <Button onClick={() => setCantidadDialog(false)}>
               Cancelar
             </Button>
             <Button 
               variant="contained" 
-              onClick={handleAddToCart}
+              onClick={handleAgregarAlCarrito}
               disabled={!cantidadPersonas || cantidadPersonas < 1}
             >
               Agregar al carrito

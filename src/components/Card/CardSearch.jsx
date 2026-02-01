@@ -98,15 +98,12 @@ function CardSearch({ provincia }) {
                       <Typography variant="body2" color="text.secondary" align="justify">
                         {point.descripcion}
                       </Typography>
-                      <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                        Precio: ${point.precio}
-                      </Typography>
                     </CardContent>
                   </CardActionArea>
                   <div style={{ display: "flex" }}>
-                    <Link to={`/compra/${point.excursion}`} style={{ width: "100%" }}>
+                    <Link to={`/reserva/${point.excursion}`} style={{ width: "100%" }}>
                       <Button variant="contained" size="small" style={{ width: "100%" }}>
-                        COMPRAR
+                        RESERVAR
                       </Button>
                     </Link>
                   </div>
