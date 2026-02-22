@@ -14,7 +14,7 @@ import { useCarrito } from '../context/CarritoContext';
 import api from '../services/api';
 import salidaService from '../services/Salida.service';
 import NavBar from '../components/NavBar/navBar';
-
+import TarjetaPeople from '../components/Card/cardPeople';  
 const PageReserva = () => {
   const { nombreExcursion } = useParams();
   const { usuario, isAuthenticated } = useAuth();
@@ -234,9 +234,6 @@ const PageReserva = () => {
                 >
                   {excursion.descripcion}
                 </Typography>
-                {/*<Typography variant="h6" color="primary" sx={{ mt: 1 }}>
-                  Precio: Desde ${excursion.precio || 'Consultar'}
-                </Typography>*/}
               </CardContent>
             </Card>
           </Grid>
@@ -338,6 +335,7 @@ const PageReserva = () => {
           </Grid>
         </Grid>
 
+        {/* ✅ DIÁLOGO DE CANTIDAD */}
         <Dialog 
           open={cantidadDialog} 
           onClose={() => setCantidadDialog(false)}
@@ -421,6 +419,11 @@ const PageReserva = () => {
             </Button>
           </DialogActions>
         </Dialog>
+      </Container>
+
+      {/*  EXPERIENCIAS ALEATORIAS */}
+      <Container maxWidth="lg" sx={{ mt: 6, mb: 4 }}>
+        <TarjetaPeople bandera={true} />
       </Container>
     </>
   );

@@ -28,11 +28,14 @@ const navArrayLinks = [
     path: "/excursiones",
     icon: faMap,
   },
+  {/*}
   {
     title: "Experiencias",
     path: "/experiencias",
     icon: faBomb,
-  },
+  } */}
+    ,
+
   {
     title: "Contacto",
     path: "/contacto",
@@ -79,6 +82,26 @@ export default function NavBar() {
           alignItems: 'center',
           minHeight: '64px'
         }}>
+
+          {/* Logo - lleva al inicio al hacer click */}
+          <Box
+            component={Link}
+            to="/"
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              mr: 2,
+              textDecoration: 'none',
+              flexShrink: 0,
+            }}
+          >
+            <img
+              src="/modotrip-logo.svg"
+              alt="ModoTrip"
+              style={{ height: '40px', width: 'auto' }}
+            />
+          </Box>
+
           {/* Links de navegación */}
           {navArrayLinks.map((item, index) => (
             <Button

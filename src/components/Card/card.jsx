@@ -88,12 +88,12 @@ function Tarjeta({ bandera }) {
       <Card>
         <CardContent>
           <Typography variant="h4" align="center">
-            LOS MÁS VISITADOS
+            LOS MAS VISITADOS
           </Typography>
           <Grid container spacing={5} style={{ marginTop: "25px" }}>
             {randomItems.map((point, index) => (
               <Grid item xs={12} sm={4} key={index}>
-                {point && point.img && point.excursion && point.descripcion && (
+                {point && point.img && point.excursion && point.descripcion && point.precio && (
                   <Card sx={{ maxWidth: 345 }} style={{ padding: "10px", marginTop: "30px", display: "flex", flexDirection: "column" }}>
                     <CardActionArea>
                       <CardMedia
@@ -109,6 +109,9 @@ function Tarjeta({ bandera }) {
                         </Typography>
                         <Typography variant="body2" color="text.secondary" align="justify">
                           {point.descripcion}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          Precio: ${point.precio}
                         </Typography>
                       </CardContent>
                     </CardActionArea>

@@ -75,7 +75,7 @@ function TarjetaPeople({ bandera }) {
   if (bandera) {
     randomItems = getRandomItems(post, 3);
   } else {
-    randomItems = getRandomItems(post, 6);
+    randomItems = getRandomItems(post, 4);
   }
 
   return (

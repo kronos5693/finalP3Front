@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
-import { Container, Box } from '@mui/material';
+import { Container, Box, Alert } from '@mui/material';
 
 const ContactForm = () => {
   const [formData, setFormData] = useState({
@@ -10,6 +10,8 @@ const ContactForm = () => {
     email: '',
     message: '',
   });
+  
+  const [showSuccess, setShowSuccess] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -22,6 +24,21 @@ const ContactForm = () => {
     console.log('Nombre: ', formData.name);
     console.log('Email: ', formData.email);
     console.log('Consulta: ', formData.message);
+    
+    // Mostrar mensaje de éxito
+    setShowSuccess(true);
+    
+    // Limpiar el formulario
+    setFormData({
+      name: '',
+      email: '',
+      message: '',
+    });
+    
+    // Ocultar el mensaje después de 5 segundos
+    setTimeout(() => {
+      setShowSuccess(false);
+    }, 7000);
   };
 
   return (
@@ -34,6 +51,17 @@ const ContactForm = () => {
       }}
     >
       <Typography variant="h6">Haga su consulta</Typography>
+      
+      {showSuccess && (
+        <Alert 
+          severity="success" 
+          sx={{ mt: 2, mb: 2 }}
+          onClose={() => setShowSuccess(false)}
+        >
+          ¡Su consulta fue enviada con éxito! Nos pondremos en contacto pronto.
+        </Alert>
+      )}
+      
       <form onSubmit={handleSubmit}>
         <TextField
           name="name"
@@ -42,6 +70,7 @@ const ContactForm = () => {
           onChange={handleChange}
           fullWidth
           margin="normal"
+          required
         />
         <TextField
           name="email"
@@ -51,6 +80,7 @@ const ContactForm = () => {
           onChange={handleChange}
           fullWidth
           margin="normal"
+          required
         />
         <TextField
           name="message"
@@ -61,6 +91,7 @@ const ContactForm = () => {
           onChange={handleChange}
           fullWidth
           margin="normal"
+          required
         />
         <Box display="flex" justifyContent="flex-end"> 
           <Button variant="contained" color="primary" type="submit">
